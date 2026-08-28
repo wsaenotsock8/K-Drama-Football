@@ -72,6 +72,15 @@
     padding:6px 10px;
     border-radius:var(--radius);
   }
+  .season-select select:hover,
+  .season-select select:focus{
+    color:var(--chalk);
+    background:var(--bg-alt);
+  }
+  .season-select select option{
+    background:var(--bg-alt);
+    color:var(--chalk);
+  }
   .champ-label{
     margin-top:26px;
     font-family:'IBM Plex Mono', monospace;
@@ -390,6 +399,33 @@
   <p class="table-note">Click any column to sort. Rank reflects final standings after playoffs, not regular-season record.</p>
 </section>
 
+<div class="hashes"><span></span><span></span><span></span><span></span><span></span></div>
+
+<section id="alltime">
+  <div class="section-head">
+    <h2>All-Time</h2>
+    <span class="count" id="alltimeSpan"></span>
+  </div>
+  <div class="records" id="alltimeHighlights"></div>
+
+  <table id="alltimeTable">
+    <thead>
+      <tr>
+        <th data-key="owner" data-type="str">Owner</th>
+        <th data-key="seasons" data-type="num">Seasons</th>
+        <th data-key="record" data-type="num">W&ndash;L&ndash;T</th>
+        <th data-key="winpct" data-type="num">Win %</th>
+        <th data-key="titles" data-type="num">Titles</th>
+        <th data-key="pf" data-type="num">Career PF</th>
+        <th data-key="ppg" data-type="num">PPG</th>
+        <th data-key="bestFinish" data-type="num">Best Finish</th>
+      </tr>
+    </thead>
+    <tbody id="alltimeBody"></tbody>
+  </table>
+  <p class="table-note">Career totals across every season on record. Click a column to sort. PPG is points-for per game played.</p>
+</section>
+
 <footer>BUILT FOR THE LEAGUE &middot; MORE SEASONS COMING SOON</footer>
 
 <script>
@@ -697,7 +733,7 @@ function sortAndRenderStandings(s){
   });
   renderStandingsRows(rows);
 
-  document.querySelectorAll("thead th").forEach(th=>{
+  document.querySelectorAll("#standingsTable thead th").forEach(th=>{
     th.classList.remove("sorted");
     th.querySelector(".arrow")?.remove();
     if(th.dataset.key === key){
@@ -710,15 +746,115 @@ function sortAndRenderStandings(s){
   });
 }
 
-function render(){
-  const s = SEASONS[currentYear];
-  renderHero(s);
-  renderBracket(s);
-  renderRecords(s);
-  sortAndRenderStandings(s);
+function computeAllTime(){
+  const owners = {};
+  YEARS_DESC.forEach(y=>{
+    const s = SEASONS[y];
+    s.standings.forEach(row=>{
+      const key = row.owner;
+      if(!owners[key]){
+        owners[key] = { owner:key, seasons:0, w:0, l:0, t:0, pf:0, pa:0, titles:0, bestFinish:Infinity };
+      }
+      const o = owners[key];
+      const [w,l,t] = row.record.split("-").map(Number);
+      o.seasons += 1;
+      o.w += w; o.l += l; o.t += t;
+      o.pf += row.pf; o.pa += row.pa;
+      if(row.champion) o.titles += 1;
+      if(row.rank < o.bestFinish) o.bestFinish = row.rank;
+    });
+  });
+  return Object.values(owners).map(o=>{
+    const games = o.w + o.l + o.t;
+    return { ...o, winpct: games ? o.w / games : 0, ppg: games ? o.pf / games : 0 };
+  });
 }
 
-document.querySelectorAll("thead th").forEach(th=>{
+let alltimeSortState = { key:"titles", dir:-1 };
+
+function renderAllTimeRows(rows){
+  const body = document.getElementById("alltimeBody");
+  body.innerHTML = rows.map(o=>`
+    <tr class="${o.titles > 0 ? 'champion' : ''}">
+      <td class="team">${o.owner}${o.titles > 0 ? `<span class="trophy">${o.titles > 1 ? o.titles + 'x CHAMP' : 'CHAMP'}</span>` : ''}</td>
+      <td>${o.seasons}</td>
+      <td>${o.w}-${o.l}-${o.t}</td>
+      <td>${(o.winpct*100).toFixed(1)}%</td>
+      <td>${o.titles}</td>
+      <td>${o.pf.toFixed(2)}</td>
+      <td>${o.ppg.toFixed(1)}</td>
+      <td>${o.bestFinish === 1 ? '1st 🏆' : o.bestFinish + (o.bestFinish===2?'nd':o.bestFinish===3?'rd':'th')}</td>
+    </tr>
+  `).join("");
+}
+
+function sortAndRenderAllTime(){
+  const data = computeAllTime();
+  const { key, dir } = alltimeSortState;
+  data.sort((a,b)=>{
+    let av, bv;
+    if(key === "owner"){ av = a.owner; bv = b.owner; }
+    else if(key === "record"){ av = a.w; bv = b.w; }
+    else { av = a[key]; bv = b[key]; }
+    if(typeof av === "string"){ return av.localeCompare(bv) * dir; }
+    return (av - bv) * dir;
+  });
+  renderAllTimeRows(data);
+
+  document.querySelectorAll("#alltimeTable thead th").forEach(th=>{
+    th.classList.remove("sorted");
+    th.querySelector(".arrow")?.remove();
+    if(th.dataset.key === key){
+      th.classList.add("sorted");
+      const arrow = document.createElement("span");
+      arrow.className = "arrow";
+      arrow.textContent = dir === 1 ? "▲" : "▼";
+      th.appendChild(arrow);
+    }
+  });
+}
+
+function renderAllTimeHighlights(){
+  const data = computeAllTime();
+  document.getElementById("alltimeSpan").textContent = YEARS_DESC.length + " seasons on record";
+
+  const mostTitles = [...data].sort((a,b)=> b.titles - a.titles)[0];
+  const eligible = data.filter(o=> o.seasons >= 2);
+  const bestWinPct = [...eligible].sort((a,b)=> b.winpct - a.winpct)[0];
+  const worstWinPct = [...eligible].sort((a,b)=> a.winpct - b.winpct)[0];
+  const mostPF = [...data].sort((a,b)=> b.pf - a.pf)[0];
+  const mostLosses = [...data].sort((a,b)=> b.l - a.l)[0];
+  const debuts = data.filter(o=> o.seasons === 1);
+  const bestDebut = [...debuts].sort((a,b)=> b.winpct - a.winpct)[0];
+
+  const cards = [
+    { label:"Most Championships", value: mostTitles.titles, who: mostTitles.owner, tone:"gold" },
+    { label:"Best Career Win %", value: (bestWinPct.winpct*100).toFixed(1) + "%", who: `${bestWinPct.owner} — ${bestWinPct.seasons} seasons` },
+    { label:"Most Career Points", value: mostPF.pf.toFixed(2), who: mostPF.owner },
+    { label:"Lowest Career Win %", value: (worstWinPct.winpct*100).toFixed(1) + "%", who: `${worstWinPct.owner} — ${worstWinPct.seasons} seasons`, tone:"rust" },
+    { label:"Most Career Losses", value: mostLosses.l, who: mostLosses.owner, tone:"rust" },
+    { label:"Best Debut Season", value: (bestDebut.winpct*100).toFixed(1) + "%", who: bestDebut.owner }
+  ];
+
+  document.getElementById("alltimeHighlights").innerHTML = cards.map(c=>`
+    <div class="record-card ${c.tone || ''}">
+      <div class="rlabel">${c.label}</div>
+      <div class="rvalue">${c.value}</div>
+      <div class="rwho"><b>${c.who}</b></div>
+    </div>
+  `).join("");
+}
+
+document.querySelectorAll("#alltimeTable thead th").forEach(th=>{
+  th.addEventListener("click", ()=>{
+    const key = th.dataset.key;
+    if(alltimeSortState.key === key){ alltimeSortState.dir *= -1; }
+    else { alltimeSortState = { key, dir: -1 }; }
+    sortAndRenderAllTime();
+  });
+});
+
+document.querySelectorAll("#standingsTable thead th").forEach(th=>{
   th.addEventListener("click", ()=>{
     const key = th.dataset.key;
     if(sortState.key === key){ sortState.dir *= -1; }
@@ -726,6 +862,16 @@ document.querySelectorAll("thead th").forEach(th=>{
     sortAndRenderStandings(SEASONS[currentYear]);
   });
 });
+
+function render(){
+  const s = SEASONS[currentYear];
+  renderHero(s);
+  renderBracket(s);
+  renderRecords(s);
+  sortAndRenderStandings(s);
+  renderAllTimeHighlights();
+  sortAndRenderAllTime();
+}
 
 initPicker();
 render();
