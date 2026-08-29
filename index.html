@@ -54,8 +54,15 @@
     font-size:12px;
     color:var(--gold);
   }
-  .season-select{
+  .picker-row{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
     margin-top:14px;
+  }
+  .season-select{
+    margin-top:0;
     display:inline-flex;
     align-items:center;
     gap:8px;
@@ -340,18 +347,38 @@
 
 <header class="hero">
   <div class="eyebrow">League History</div>
-  <div class="season-select">
-    <span>SEASON</span>
-    <select id="seasonPicker"></select>
+  <div class="picker-row">
+    <div class="season-select" id="seasonSelectWrap">
+      <span>SEASON</span>
+      <select id="seasonPicker"></select>
+    </div>
+    <div class="season-select">
+      <span>PAGE</span>
+      <select id="pagePicker">
+        <option value="recap">Season Recap</option>
+        <option value="alltime">All-Time Stats</option>
+      </select>
+    </div>
   </div>
 
-  <div class="champ-label">Champion</div>
-  <h1 class="champ-name" id="champName"></h1>
-  <div class="champ-owner" id="champOwner"></div>
-  <div id="repeatBadge"></div>
-  <div class="belt"></div>
-  <p class="subplot" id="subplot"></p>
+  <div id="heroRecap">
+    <div class="champ-label">Champion</div>
+    <h1 class="champ-name" id="champName"></h1>
+    <div class="champ-owner" id="champOwner"></div>
+    <div id="repeatBadge"></div>
+    <div class="belt"></div>
+    <p class="subplot" id="subplot"></p>
+  </div>
+
+  <div id="heroAlltime" style="display:none;">
+    <div class="champ-label">Lifetime</div>
+    <h1 class="champ-name">ALL-TIME</h1>
+    <div class="champ-owner"><span>Every season. Every manager. Every stat.</span></div>
+    <div class="belt"></div>
+  </div>
 </header>
+
+<div id="recapSections">
 
 <div class="hashes"><span></span><span></span><span></span><span></span><span></span></div>
 
@@ -399,11 +426,15 @@
   <p class="table-note">Click any column to sort. Rank reflects final standings after playoffs, not regular-season record.</p>
 </section>
 
+</div>
+
+<div id="alltimeSections" style="display:none;">
+
 <div class="hashes"><span></span><span></span><span></span><span></span><span></span></div>
 
 <section id="alltime">
   <div class="section-head">
-    <h2>All-Time</h2>
+    <h2>All-Time Leaderboard</h2>
     <span class="count" id="alltimeSpan"></span>
   </div>
   <div class="records" id="alltimeHighlights"></div>
@@ -425,6 +456,8 @@
   </table>
   <p class="table-note">Career totals across every season on record. Click a column to sort. PPG is points-for per game played.</p>
 </section>
+
+</div>
 
 <footer>BUILT FOR THE LEAGUE &middot; MORE SEASONS COMING SOON</footer>
 
@@ -612,8 +645,132 @@ SEASONS["2023"] = {
   ]
 };
 
+SEASONS["2022"] = {
+  label: "2022–23",
+  leagueNote: "Fantasy University",
+  champion: { team: "Chargers #1 LA Team", owner: "Jason", record: "7-6-0", pf: 1411.54 },
+  repeatChamp: false,
+  subplot: `The earliest season on record, back when the league was still called <strong>Fantasy University</strong>. <strong>Chargers #1 LA Team</strong> snuck in as the 6-seed and edged <strong>The Average Joes</strong> in the final, 116.56–115.30 — the league's first title, and its first taste of a low-seed running the bracket table.`,
+  bracketWeeks: "Weeks 14–16",
+  rounds: [
+    {
+      label: "Quarterfinals", week: "Wk 14",
+      matchups: [
+        { bye:true, teams:[{seed:1, team:"Shekki TUA Gesicki"}] },
+        { teams:[{seed:4, team:"Brian's Bold Team", score:81.16, win:false}, {seed:5, team:"Juice It Up Is Nasty", score:99.68, win:true}] },
+        { teams:[{seed:3, team:"I Hate Boba", score:102.78, win:false}, {seed:6, team:"Chargers #1 LA Team", score:129.92, win:true}] },
+        { bye:true, teams:[{seed:2, team:"The Average Joes"}] }
+      ]
+    },
+    {
+      label: "Semifinals", week: "Wk 15",
+      matchups: [
+        { teams:[{seed:1, team:"Shekki TUA Gesicki", score:121.06, win:false}, {seed:6, team:"Chargers #1 LA Team", score:133.32, win:true}] },
+        { teams:[{seed:2, team:"The Average Joes", score:140.70, win:true}, {seed:5, team:"Juice It Up Is Nasty", score:72.94, win:false}] }
+      ]
+    },
+    {
+      label: "Final", week: "Wk 16",
+      matchups: [
+        { final:true, teams:[{seed:2, team:"The Average Joes", score:115.30, win:false}, {seed:6, team:"Chargers #1 LA Team", score:116.56, win:true, champ:true}] }
+      ]
+    }
+  ],
+  consolation: [
+    { label:"5th Place Game", week:"Wk 15", teams:[{seed:3, team:"I Hate Boba", score:107.30, win:true}, {seed:4, team:"Brian's Bold Team", score:80.56, win:false}] },
+    { label:"3rd Place Game", week:"Wk 16", teams:[{seed:1, team:"Shekki TUA Gesicki", score:137.40, win:true}, {seed:5, team:"Juice It Up Is Nasty", score:67.86, win:false}] }
+  ],
+  placements: "1st Chargers #1 LA Team · 2nd The Average Joes · 3rd Shekki TUA Gesicki · 4th Juice It Up Is Nasty · 5th I Hate Boba · 6th Brian's Bold Team.",
+  records: [
+    { label:"Most Points Scored", value:"1580.16", who:"Shekki TUA Gesicki — William", tone:"gold" },
+    { label:"Best Regular Season", value:"9–4", who:"Shekki TUA Gesicki — William" },
+    { label:"Stingiest Defense", value:"1236.80", who:"PA — Suckmahcack 🦎 — Jim" },
+    { label:"Longest Skid", value:"L–2", who:"3-way tie — Juice It Up Is Nasty, Will Smith's Mighty Slap & Gyros Gone Wild", tone:"rust" },
+    { label:"Most Waiver Moves", value:"33", who:"Suckmahcack 🦎 — Jim" },
+    { label:"Leakiest Defense", value:"1481.64", who:"PA — Gyros Gone Wild — White Mike", tone:"rust" },
+    { label:"Fewest Points Scored", value:"1191.56", who:"bAbe — Abe", tone:"rust" },
+    { label:"Worst Record", value:"3–10", who:"Tied — bAbe & Gyros Gone Wild", tone:"rust" }
+  ],
+  standings: [
+    {rank:1, team:"CHARGERS #1 LA TEAM", owner:"Jason", record:"7-6-0", pf:1411.54, pa:1334.92, streak:"W-2", budget:null, waiver:12, moves:12, champion:true},
+    {rank:2, team:"THE AVERAGE JOES", owner:"Matteo", record:"8-5-0", pf:1461.78, pa:1341.80, streak:"W-4", budget:null, waiver:3, moves:17},
+    {rank:3, team:"SHEKKI TUA GESICKI", owner:"William", record:"9-4-0", pf:1580.16, pa:1438.80, streak:"W-1", budget:null, waiver:10, moves:19},
+    {rank:4, team:"JUICE IT UP IS NASTY", owner:"James Yi", record:"7-6-0", pf:1459.50, pa:1461.78, streak:"L-2", budget:null, waiver:9, moves:19},
+    {rank:5, team:"I HATE BOBA", owner:"Richard", record:"8-5-0", pf:1357.54, pa:1270.26, streak:"L-1", budget:null, waiver:1, moves:17},
+    {rank:6, team:"BRIAN'S BOLD TEAM", owner:"Brian", record:"8-5-0", pf:1336.50, pa:1286.02, streak:"L-1", budget:null, waiver:11, moves:24},
+    {rank:7, team:"SUCKMAHCACK 🦎", owner:"Jim", record:"7-6-0", pf:1241.80, pa:1236.80, streak:"L-1", budget:null, waiver:7, moves:33},
+    {rank:8, team:"WILL SMITH'S MIGHTY SLAP", owner:"Kirk", record:"6-7-0", pf:1469.44, pa:1421.34, streak:"L-2", budget:null, waiver:8, moves:24},
+    {rank:9, team:"BABE", owner:"Abe", record:"3-10-0", pf:1191.56, pa:1447.44, streak:"W-1", budget:null, waiver:4, moves:27},
+    {rank:10, team:"GYROS GONE WILD", owner:"White Mike", record:"3-10-0", pf:1281.62, pa:1481.64, streak:"L-2", budget:null, waiver:5, moves:26},
+    {rank:11, team:"DADDY'S JUICED", owner:"Austin", record:"6-7-0", pf:1407.40, pa:1426.62, streak:"W-1", budget:null, waiver:2, moves:21},
+    {rank:12, team:"POP LOCKETT DROP IT", owner:"Solo", record:"6-7-0", pf:1369.32, pa:1420.74, streak:"W-2", budget:null, waiver:6, moves:32}
+  ]
+};
+
+SEASONS["2021"] = {
+  label: "2021–22",
+  leagueNote: "Fantasy University",
+  champion: { team: "RunningBackUniversity", owner: "Matteo", record: "10-3-0", pf: 1788.02 },
+  repeatChamp: false,
+  subplot: `The original season. <strong>Solo's Goojoobane</strong> dropped the most points in the league (1909.94) and looked like the team to beat all year, but <strong>Matteo's RunningBackUniversity</strong> snuck through as the 3-seed and stole the title in the final, 127.20&ndash;121.28. <strong>James' friend's friend</strong> rode a surprise run to the semifinals before word got out the roster was actually being run by Richard's second account. And <strong>Blue Mountain State</strong> (Jason) endured a nine-game losing streak and the league's worst record &mdash; a rough start to a story that would end in a championship the very next season.`,
+  bracketWeeks: "Weeks 14–16",
+  rounds: [
+    {
+      label: "Quarterfinals", week: "Wk 14",
+      matchups: [
+        { teams:[{seed:1, team:"Goojoobane", score:161.24, win:true}, {seed:8, team:"Bobby Woods", score:133.90, win:false}] },
+        { teams:[{seed:4, team:"James' Friend's Friend", score:149.18, win:true}, {seed:5, team:"Greekster", score:107.44, win:false}] },
+        { teams:[{seed:3, team:"RunningBackUniversity", score:145.32, win:true}, {seed:6, team:"Feeding Eggrolls To Your Mom", score:103.42, win:false}] },
+        { teams:[{seed:2, team:"2 Gurley 1 Kupp", score:184.82, win:true}, {seed:7, team:"Christian McGlassefey", score:60.14, win:false}] }
+      ]
+    },
+    {
+      label: "Semifinals", week: "Wk 15",
+      matchups: [
+        { teams:[{seed:1, team:"Goojoobane", score:168.52, win:true}, {seed:4, team:"James' Friend's Friend", score:77.50, win:false}] },
+        { teams:[{seed:2, team:"2 Gurley 1 Kupp", score:71.26, win:false}, {seed:3, team:"RunningBackUniversity", score:119.58, win:true}] }
+      ]
+    },
+    {
+      label: "Final", week: "Wk 16",
+      matchups: [
+        { final:true, teams:[{seed:1, team:"Goojoobane", score:121.28, win:false}, {seed:3, team:"RunningBackUniversity", score:127.20, win:true, champ:true}] }
+      ]
+    }
+  ],
+  consolation: [
+    { label:"3rd Place Game", week:"Wk 16", teams:[{seed:2, team:"2 Gurley 1 Kupp", score:136.98, win:true}, {seed:4, team:"James' Friend's Friend", score:132.40, win:false}] }
+  ],
+  placements: "1st RunningBackUniversity · 2nd Goojoobane · 3rd 2 Gurley 1 Kupp · 4th James' Friend's Friend.",
+  records: [
+    { label:"Most Points Scored", value:"1909.94", who:"Goojoobane — Solo", tone:"gold" },
+    { label:"Best Regular Season", value:"10–3", who:"3-way tie — RunningBackUniversity, Goojoobane & 2 Gurley 1 Kupp" },
+    { label:"Stingiest Defense", value:"1467.18", who:"PA — Christian McGlassefey — William" },
+    { label:"Longest Skid", value:"L–9", who:"Blue Mountain State — Jason", tone:"rust" },
+    { label:"Most Waiver Moves", value:"46", who:"Goojoobane — Solo" },
+    { label:"Leakiest Defense", value:"1706.74", who:"PA — Blue Mountain State — Jason", tone:"rust" },
+    { label:"Fewest Points Scored", value:"1358.38", who:"Michael's Incredible Team — China Mike", tone:"rust" },
+    { label:"Worst Record", value:"2–11", who:"Blue Mountain State — Jason", tone:"rust" }
+  ],
+  standings: [
+    {rank:1, team:"RUNNINGBACKUNIVERSITY", owner:"Matteo", record:"10-3-0", pf:1788.02, pa:1552.64, streak:"W-1", budget:null, waiver:12, moves:43, champion:true},
+    {rank:2, team:"GOOJOOBANE", owner:"Solo", record:"10-3-0", pf:1909.94, pa:1612.78, streak:"W-8", budget:null, waiver:11, moves:46},
+    {rank:3, team:"2 GURLEY 1 KUPP", owner:"Sam", record:"10-3-0", pf:1851.32, pa:1537.38, streak:"W-3", budget:null, waiver:8, moves:34},
+    {rank:4, team:"JAMES' FRIEND'S FRIEND", owner:"Richard (2nd account)", record:"9-4-0", pf:1604.54, pa:1598.30, streak:"L-1", budget:null, waiver:10, moves:12},
+    {rank:5, team:"CHRISTIAN MCGLASSEFEY", owner:"William", record:"6-7-0", pf:1548.24, pa:1467.18, streak:"W-1", budget:null, waiver:7, moves:32},
+    {rank:6, team:"GREEKSTER", owner:"White Mike", record:"8-5-0", pf:1563.76, pa:1524.66, streak:"L-1", budget:null, waiver:3, moves:15},
+    {rank:7, team:"BOBBY WOODS", owner:"James Yi", record:"5-8-0", pf:1434.08, pa:1632.86, streak:"L-1", budget:null, waiver:9, moves:15},
+    {rank:8, team:"FEEDING EGGROLLS TO YOUR MOM", owner:"Kirk", record:"6-7-0", pf:1669.08, pa:1548.22, streak:"L-1", budget:null, waiver:2, moves:30},
+    {rank:9, team:"MOCHI'S NUTZ", owner:"Abe", record:"4-9-0", pf:1530.04, pa:1691.38, streak:"L-3", budget:null, waiver:5, moves:28},
+    {rank:10, team:"MASE KISSIN TDS", owner:"Masam", record:"4-9-0", pf:1441.80, pa:1666.26, streak:"W-1", budget:null, waiver:1, moves:4},
+    {rank:11, team:"MICHAEL'S INCREDIBLE TEAM", owner:"China Mike", record:"4-9-0", pf:1358.38, pa:1578.88, streak:"W-1", budget:null, waiver:6, moves:25},
+    {rank:12, team:"BLUE MOUNTAIN STATE", owner:"Jason", record:"2-11-0", pf:1418.08, pa:1706.74, streak:"L-9", budget:null, waiver:4, moves:8}
+  ]
+};
+
 const YEARS_DESC = Object.keys(SEASONS).sort((a,b)=> b - a);
 let currentYear = YEARS_DESC[0];
+let currentPage = "recap";
 let sortState = { key:"rank", dir:1 };
 
 function initPicker(){
@@ -630,6 +787,21 @@ function initPicker(){
     sortState = { key:"rank", dir:1 };
     render();
   });
+
+  const pagePicker = document.getElementById("pagePicker");
+  pagePicker.addEventListener("change", ()=>{
+    currentPage = pagePicker.value;
+    render();
+  });
+}
+
+function renderPageToggle(){
+  const isRecap = currentPage === "recap";
+  document.getElementById("recapSections").style.display = isRecap ? "" : "none";
+  document.getElementById("alltimeSections").style.display = isRecap ? "none" : "";
+  document.getElementById("heroRecap").style.display = isRecap ? "" : "none";
+  document.getElementById("heroAlltime").style.display = isRecap ? "none" : "";
+  document.getElementById("seasonSelectWrap").style.display = isRecap ? "" : "none";
 }
 
 function renderHero(s){
@@ -864,13 +1036,17 @@ document.querySelectorAll("#standingsTable thead th").forEach(th=>{
 });
 
 function render(){
-  const s = SEASONS[currentYear];
-  renderHero(s);
-  renderBracket(s);
-  renderRecords(s);
-  sortAndRenderStandings(s);
-  renderAllTimeHighlights();
-  sortAndRenderAllTime();
+  renderPageToggle();
+  if(currentPage === "recap"){
+    const s = SEASONS[currentYear];
+    renderHero(s);
+    renderBracket(s);
+    renderRecords(s);
+    sortAndRenderStandings(s);
+  } else {
+    renderAllTimeHighlights();
+    sortAndRenderAllTime();
+  }
 }
 
 initPicker();
