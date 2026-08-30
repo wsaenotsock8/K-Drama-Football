@@ -318,6 +318,77 @@
 
   .table-note{ font-size:12px; color:var(--muted); margin-bottom:60px; }
 
+  /* Hall of Shame */
+  .shame-list{
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-bottom:20px;
+  }
+  .shame-card{
+    background:var(--bg);
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:0;
+  }
+  .shame-media{
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .shame-media video, .shame-media img{
+    width:100%;
+    height:100%;
+    max-height:420px;
+    object-fit:cover;
+    display:block;
+  }
+  .shame-info{
+    padding:28px 30px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .shame-year{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:8px;
+  }
+  .shame-name{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:34px;
+    letter-spacing:0.02em;
+    color:var(--chalk);
+    line-height:1;
+  }
+  .shame-name span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--muted);
+    font-weight:400;
+    letter-spacing:0;
+    margin-left:6px;
+  }
+  .shame-desc{
+    margin-top:14px;
+    font-size:14px;
+    line-height:1.6;
+    color:var(--muted);
+    max-width:480px;
+  }
+
+  @media (max-width: 720px){
+    .shame-card{ grid-template-columns:1fr; }
+    .shame-media video, .shame-media img{ max-height:320px; }
+  }
+
   footer{
     max-width:1040px;
     margin:0 auto;
@@ -357,6 +428,7 @@
       <select id="pagePicker">
         <option value="recap">Season Recap</option>
         <option value="alltime">All-Time Stats</option>
+        <option value="shame">Hall of Shame</option>
       </select>
     </div>
   </div>
@@ -374,6 +446,13 @@
     <div class="champ-label">Lifetime</div>
     <h1 class="champ-name">ALL-TIME</h1>
     <div class="champ-owner"><span>Every season. Every manager. Every stat.</span></div>
+    <div class="belt"></div>
+  </div>
+
+  <div id="heroShame" style="display:none;">
+    <div class="champ-label">Last Place Doesn't Walk Away Free</div>
+    <h1 class="champ-name">HALL OF SHAME</h1>
+    <div class="champ-owner"><span>The league's punishment tradition, year by year.</span></div>
     <div class="belt"></div>
   </div>
 </header>
@@ -455,6 +534,60 @@
     <tbody id="alltimeBody"></tbody>
   </table>
   <p class="table-note">Career totals across every season on record. Click a column to sort. PPG is points-for per game played.</p>
+</section>
+
+</div>
+
+<div id="shameSections" style="display:none;">
+
+<div class="hashes"><span></span><span></span><span></span><span></span><span></span></div>
+
+<section id="shame">
+  <div class="section-head">
+    <h2>Hall of Shame</h2>
+    <span class="count">Last place pays up</span>
+  </div>
+  <div class="shame-list">
+
+    <div class="shame-card">
+      <div class="shame-media">
+        <video controls playsinline preload="metadata">
+          <source src="media/punishment_2025.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="shame-info">
+        <div class="shame-year">2025&ndash;26 &middot; Last Place</div>
+        <div class="shame-name">Kevin <span>&mdash; KWONTON, 4-10-0</span></div>
+        <div class="shame-desc">Dressed as a French maid and got served a punishment cocktail, funnel-style, in front of the whole league.</div>
+      </div>
+    </div>
+
+    <div class="shame-card">
+      <div class="shame-media">
+        <video controls playsinline preload="metadata">
+          <source src="media/punishment_2024.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="shame-info">
+        <div class="shame-year">2024&ndash;25 &middot; Last Place</div>
+        <div class="shame-name">Kevin <span>&mdash; KWONTON, 2-12-0</span></div>
+        <div class="shame-desc">Two years, two last-place finishes. This time it was a full Sailor Moon costume, worn out in public for everyone to see.</div>
+      </div>
+    </div>
+
+    <div class="shame-card">
+      <div class="shame-media">
+        <img src="media/punishment_2023.jpg" alt="White Mike's punishment, 2023-24 season" loading="lazy">
+      </div>
+      <div class="shame-info">
+        <div class="shame-year">2023&ndash;24 &middot; Last Place</div>
+        <div class="shame-name">White Mike <span>&mdash; Gyros Gone Wild, 3-10-0</span></div>
+        <div class="shame-desc">The one that started it — a full sunflower sundress, worn to a party for the whole squad to see.</div>
+      </div>
+    </div>
+
+  </div>
+  <p class="table-note">Losing seasons pulled straight from the standings — check the Season Recap page for full context on each year.</p>
 </section>
 
 </div>
@@ -797,10 +930,14 @@ function initPicker(){
 
 function renderPageToggle(){
   const isRecap = currentPage === "recap";
+  const isAlltime = currentPage === "alltime";
+  const isShame = currentPage === "shame";
   document.getElementById("recapSections").style.display = isRecap ? "" : "none";
-  document.getElementById("alltimeSections").style.display = isRecap ? "none" : "";
+  document.getElementById("alltimeSections").style.display = isAlltime ? "" : "none";
+  document.getElementById("shameSections").style.display = isShame ? "" : "none";
   document.getElementById("heroRecap").style.display = isRecap ? "" : "none";
-  document.getElementById("heroAlltime").style.display = isRecap ? "none" : "";
+  document.getElementById("heroAlltime").style.display = isAlltime ? "" : "none";
+  document.getElementById("heroShame").style.display = isShame ? "" : "none";
   document.getElementById("seasonSelectWrap").style.display = isRecap ? "" : "none";
 }
 
@@ -1043,7 +1180,7 @@ function render(){
     renderBracket(s);
     renderRecords(s);
     sortAndRenderStandings(s);
-  } else {
+  } else if(currentPage === "alltime"){
     renderAllTimeHighlights();
     sortAndRenderAllTime();
   }
