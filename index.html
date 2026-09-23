@@ -483,7 +483,7 @@ function weekLog(y){
 V.records = () => {
   const sc=[],gl=[];
   Object.keys(G).forEach(y=>G[y].forEach(g=>{const po=g[0]>REG[y];gl.push({y,w:g[0],a:g[1],sa:g[2],b:g[3],sb:g[4],po});sc.push({y,w:g[0],m:g[1],s:g[2],o:g[3],os:g[4],po},{y,w:g[0],m:g[3],s:g[4],o:g[1],os:g[2],po})}));
-  const glv=gl.filter(g=>!hid(g.a)&&!hid(g.b)), scv=sc.filter(x=>!hid(x.m));
+  const glv=gl.filter(g=>!hid(g.a)&&!hid(g.b)), scv=sc.filter(x=>!hid(x.m)&&!hid(x.o));
   const wn=g=>g.sa>g.sb?[g.a,g.b]:[g.b,g.a];
   const card=(label,list,val,ctx,tone)=>`<div class="rec"><div class="lbl">${label}</div><div class="big ${tone||''}">${val(list[0])}</div><div class="ctx">${ctx(list[0])}</div><ol>${list.slice(1,5).map(x=>`<li>${ctx(x).replace(/<\/?span>/g,'')}<b>${val(x)}</b></li>`).join('')}</ol></div>`;
   const W=(x)=>`${esc(nm(x.m))} <span>· ${x.y} Wk ${x.w}${x.po?' (playoffs)':''}</span>`;
@@ -493,12 +493,12 @@ V.records = () => {
   const streaks=[]; YEARS.forEach(y=>Object.values(ST[y]).filter(r=>!hid(r.m)).forEach(r=>{let best={W:0,L:0},cur=null,n=0;r.seq.forEach(s=>{if(s===cur)n++;else{cur=s;n=1}if(s!=='T')best[s]=Math.max(best[s],n)});streaks.push({m:r.m,y,W:best.W,L:best.L})}));
   const S=x=>`${esc(nm(x.m))} <span>· ${x.y}</span>`;
   return `
-  <div class="card" style="background:transparent;border:0;margin-bottom:10px"><div class="card-h" style="padding:0 0 12px"><div><h2>Single Game</h2><p>Every Yahoo game since 2021, playoffs and consolation games included.</p></div></div></div>
+  <div class="card" style="background:transparent;border:0;margin-bottom:10px"><div class="card-h" style="padding:0 0 12px"><div><h2>Single Game</h2><p>Every Yahoo game since 2021, playoffs and consolation games included. Games against former members aren't counted.</p></div></div></div>
   <div class="grid g4" style="margin-bottom:26px">
     ${card('Most points, one week',top(scv,(a,b)=>b.s-a.s),x=>f2(x.s),W,'gold')}
     ${card('Fewest points, one week',top(scv,(a,b)=>a.s-b.s),x=>f2(x.s),W,'bad')}
-    ${card('Biggest blowout',top(gl.filter(g=>!hid(wn(g)[0])),(a,b)=>Math.abs(b.sa-b.sb)-Math.abs(a.sa-a.sb)),x=>'+'+f2(Math.abs(x.sa-x.sb)),x=>`${esc(nm(wn(x)[0]))} <span>over ${esc(lbl(x.y,wn(x)[1]))} · ${x.y} Wk ${x.w}</span>`)}
-    ${card('Closest game',top(gl.filter(g=>g.sa!==g.sb&&!hid(wn(g)[0])),(a,b)=>Math.abs(a.sa-a.sb)-Math.abs(b.sa-b.sb)),x=>f2(Math.abs(x.sa-x.sb)),x=>`${esc(nm(wn(x)[0]))} <span>over ${esc(lbl(x.y,wn(x)[1]))} · ${x.y} Wk ${x.w}</span>`)}
+    ${card('Biggest blowout',top(glv,(a,b)=>Math.abs(b.sa-b.sb)-Math.abs(a.sa-a.sb)),x=>'+'+f2(Math.abs(x.sa-x.sb)),x=>`${esc(nm(wn(x)[0]))} <span>over ${esc(lbl(x.y,wn(x)[1]))} · ${x.y} Wk ${x.w}</span>`)}
+    ${card('Closest game',top(glv.filter(g=>g.sa!==g.sb),(a,b)=>Math.abs(a.sa-a.sb)-Math.abs(b.sa-b.sb)),x=>f2(Math.abs(x.sa-x.sb)),x=>`${esc(nm(wn(x)[0]))} <span>over ${esc(lbl(x.y,wn(x)[1]))} · ${x.y} Wk ${x.w}</span>`)}
     ${card('Most points in a loss',top(scv.filter(x=>x.s<x.os),(a,b)=>b.s-a.s),x=>f2(x.s),x=>`${esc(nm(x.m))} <span>lost to ${esc(lbl(x.y,x.o))} · ${x.y} Wk ${x.w}</span>`)}
     ${card('Fewest points in a win',top(scv.filter(x=>x.s>x.os),(a,b)=>a.s-b.s),x=>f2(x.s),x=>`${esc(nm(x.m))} <span>beat ${esc(lbl(x.y,x.o))} · ${x.y} Wk ${x.w}</span>`)}
     ${card('Highest combined score',top(glv,(a,b)=>(b.sa+b.sb)-(a.sa+a.sb)),x=>f2(x.sa+x.sb),x=>`${esc(nm(x.a))} v ${esc(nm(x.b))} <span>· ${x.y} Wk ${x.w}</span>`)}
